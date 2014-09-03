@@ -1,12 +1,14 @@
 import praw, time, sqlite3, operator, re
 
 #Bot setup
-username  = 'HouseCupBot'
-password  = ''
-userAgent = 'HouseCupBot. Keeps a running score for Hogwarts houses. Author: u/d_web'
-houses    = ['gryffindor','hufflepuff','ravenclaw','slytherin']
-tagLine   = 'HouseCupBot by u/D_Web. Type "HouseCupBot !help" for more info.'
-replies   = ['%s points awarded to %s\n\n', 'Current Standings:\n\n', 'Winners:\n\n', 'Need Help?']
+USERNAME  = 'HouseCupBot'
+PASSWORD  = ''
+USERAGENT = 'HouseCupBot. Keeps a running score for Hogwarts houses. Author: u/d_web'
+HOUSES    = ['gryffindor','hufflepuff','ravenclaw','slytherin']
+TAGLINE   = 'HouseCupBot by u/D_Web. Type "HouseCupBot !help" for more info.'
+REPLIES   = ['%s points awarded to %s\n\n', 'Current Standings:\n\n', 'Winners:\n\n', 'Need Help?']
+POINTMIN  = 1
+POINTMAX  = 500
 
 #Set up SQL database. Create tables if they dont exist.
 print 'Setting up SQL Database...',
@@ -20,8 +22,8 @@ print 'DONE'
 
 #Log in to reddit
 print 'Logging in to Reddit...',
-r = praw.Reddit(userAgent)
-r.login(username, password)
+r = praw.Reddit(USERAGENT)
+r.login(USERNAME, PASSWORD)
 print 'DONE'
 
 def sortedDict(dictionary):
@@ -42,34 +44,31 @@ def subScan():
       if p_auth.lower() != username.lower():
         cur.execute('INSERT INTO oldposts VALUES(?)', pid)
         p_body = post.body.lower()
-        for house in houses:
-          if re.match('\A\d{1,3}\spoints for %s$' % house, p_body):
-            new_points = int(p_body.split()[0])
-            if new_points > 1 and new_points < 500:
-              cur.execute('SELECT points FROM scores WHERE NAME=?', house)
-              if not cur.fetchone():
-                vals = (house, new_points)
-                cur.execute('INSERT INTO scores VALUE(?,?), vals)
-              else:
-                current_points = cur.fetchone()
-                updated_points = int(current_points) + new_points
-                vals = (updated_points, house)
-                cur.execute('UPDATE scores SET points=? WHERE name=?', vals)
-            else:
-              pass
-        if p_body == 'housecupbot !scores':
-          pass #TODO: return the scores
-        elif p_body == 'housecupbot !winners':
-          pass #TODO: return the past winners
-        elif p_body == 'housecupbot !help':
-          pass #TODO: return help comment
+        if re.match('\A\d{1,3}\spoints for \D{9,}$', body):
+          for house in HOUSES:
+              if re.match('\A\d{1,3}\spoints for %s$' % house, body):
+                new_points = int(body.split()[0])
+                if new_points > POINTMIN and new_points < POINTMAX:
+                  cur.execute('SELECT points FROM scores WHERE NAME=?', house)
+                  if not cur.fetchone():
+                    vals = (house, new_points)
+                    cur.execute('INSERT INTO scores VALUE(?,?), vals)
+                  else:
+                    current_points = cur.fetchone()
+                    updated_points = int(current_points) + new_points
+                    vals = (updated_points, house)
+                    cur.execute('UPDATE scores SET points=? WHERE name=?', vals)
+                    post.reply(REPLIES[0] % new_points + TAGLINE)
+                else:
+                  pass
+        elif body == 'housecupbot !help':
+          post.reply(HELPTEXT + TAGLINE)
+        elif body == 'housecupbot !scores':
+          pass
+        elif body == 'housecupbot !winners':
+          pass
       else: 
         pass
-          
-      
-      
-      
-      
-      
+  sql.commit()
       
       
