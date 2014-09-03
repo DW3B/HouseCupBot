@@ -7,10 +7,6 @@ USERAGENT = 'HouseCupBot. Keeps a running score for Hogwarts houses. Author: u/d
 HOUSES    = ['gryffindor','hufflepuff','ravenclaw','slytherin']
 TAGLINE   = 'HouseCupBot by u/D_Web. Type "HouseCupBot !help" for more info.'
 REPLIES   = ['%s points awarded to %s\n\n','Winners:\n\n','Need Help?']
-HELPTEXT  = '''
-**HouseCupBot** 
-* Award Points: *100 points for *
-'''
 POINTMIN  = 1
 POINTMAX  = 500
 
@@ -69,7 +65,7 @@ def subScan():
                 else:
                   pass
         elif body == 'housecupbot !help':
-          post.reply(HELPTEXT + TAGLINE)
+          pass
         elif body == 'housecupbot !winners':
           pass
       else: 
