@@ -1,16 +1,20 @@
 import praw, time, sqlite3, operator, re
 
-#Bot setup
+#-----Bot Setup-----#
 USERNAME  = 'HouseCupBot'
 PASSWORD  = ''
 USERAGENT = 'HouseCupBot. Keeps a running score for Hogwarts houses. Author: u/d_web'
 HOUSES    = ['gryffindor','hufflepuff','ravenclaw','slytherin']
 TAGLINE   = 'HouseCupBot by u/D_Web. Type "HouseCupBot !help" for more info.'
-REPLIES   = ['%s points awarded to %s\n\n', 'Current Standings:\n\n', 'Winners:\n\n', 'Need Help?']
+REPLIES   = ['%s points awarded to %s\n\n','Winners:\n\n','Need Help?']
+HELPTEXT  = '''
+**HouseCupBot** 
+* Award Points: *100 points for *
+'''
 POINTMIN  = 1
 POINTMAX  = 500
 
-#Set up SQL database. Create tables if they dont exist.
+#-----SQL Database Setup-----#
 print 'Setting up SQL Database...',
 sql = sqlite3.connect(housecupbot.db)
 cur = sql.cursor()
@@ -20,7 +24,7 @@ cur.execute('CREATE TABLE IF NOT EXISTS winners(NAME TEXT, TIME_PER TEXT, POINTS
 sql.commit()
 print 'DONE'
 
-#Log in to reddit
+#-----Reddit Login-----#
 print 'Logging in to Reddit...',
 r = praw.Reddit(USERAGENT)
 r.login(USERNAME, PASSWORD)
@@ -63,8 +67,6 @@ def subScan():
                   pass
         elif body == 'housecupbot !help':
           post.reply(HELPTEXT + TAGLINE)
-        elif body == 'housecupbot !scores':
-          pass
         elif body == 'housecupbot !winners':
           pass
       else: 
