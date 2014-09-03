@@ -24,8 +24,8 @@ r = praw.Reddit(userAgent)
 r.login(username, password)
 print 'DONE'
 
-def sortedDict(dict):
-  s_dict = sorted(dict.iteritems(), key=operator.itemgetter(1))
+def sortedDict(dictionary):
+  s_dict = sorted(dictionary.iteritems(), key=operator.itemgetter(1))
   return s_dict[len(s_dict)-1]
   
 def subScan():
@@ -39,12 +39,33 @@ def subScan():
       p_auth = '[DELETED]'
     cur.execute('SELECT * FROM oldposts WHERE ID=?', pid)
     if not cur.fetchone():
-      cur.execute('INSERT INTO oldposts VALUES(?)', pid)
-      p_body = post.body.lower()
-      for house in houses:
-        re_result = re.match('\A\d{1,3}\spoints for %s$' % house, p_body)
-        if re_result:
-          pass
+      if p_auth.lower() != username.lower():
+        cur.execute('INSERT INTO oldposts VALUES(?)', pid)
+        p_body = post.body.lower()
+        for house in houses:
+          if re.match('\A\d{1,3}\spoints for %s$' % house, p_body):
+            new_points = int(p_body.split()[0])
+            if new_points > 1 and new_points < 500:
+              cur.execute('SELECT points FROM scores WHERE NAME=?', house)
+              if not cur.fetchone():
+                vals = (house, new_points)
+                cur.execute('INSERT INTO scores VALUE(?,?), vals)
+              else:
+                current_points = cur.fetchone()
+                updated_points = int(current_points) + new_points
+                vals = (updated_points, house)
+                cur.execute('UPDATE scores SET points=? WHERE name=?', vals)
+            else:
+              pass
+        if p_body == 'housecupbot !scores':
+          pass #TODO: return the scores
+        elif p_body == 'housecupbot !winners':
+          pass #TODO: return the past winners
+        elif p_body == 'housecupbot !help':
+          pass #TODO: return help comment
+      else: 
+        pass
+          
       
       
       
