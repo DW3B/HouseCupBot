@@ -14,6 +14,9 @@ HELPTEXT  = '''
 POINTMIN  = 1
 POINTMAX  = 500
 
+#TODO: Add time restrictions. If user exceeds threshold, assign negative points.
+
+
 #-----SQL Database Setup-----#
 print 'Setting up SQL Database...',
 sql = sqlite3.connect(housecupbot.db)
