@@ -10,4 +10,3 @@ Reddit bot that keeps a running score for Hogwarts houses.
     - "HouseCupBot !help"   : Will reply with a helpful comment to show what HouseCupBot can do.
     - "HouseCupBot !scores" : Will reply with the current scores for all houses.
     - "HouseCupBot !winners": Will reply with the pas winners of the House Cup.
-    - All responses have the option of being sent via PM if it detects the "-PM" switch.
