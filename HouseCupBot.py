@@ -6,7 +6,7 @@ print '''
 ==================== HOUSECUPBOT ====================
 Version: 1.1
 Subreddit: %s
-'''
+''' % SUBREDDIT
 
 #----------Bot Configuration----------#
 BOTNAME		= 'HouseCupBot'
