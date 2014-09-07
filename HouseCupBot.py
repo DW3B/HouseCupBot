@@ -28,7 +28,7 @@ Current Standings:
 * Slytherin:  %i
 
 
-Hey, I'm HouseCupBot! For more information about me, check me out on [GitHub](https://github.com/feenahm/HouseCupBot/blob/master/README.md)!
+Hey, I'm HouseCupBot! For more information about me, check me out on [GitHub](https://github.com/feenahm/HouseCupBot)!
 '''
 
 #----------SQL Database Setup----------#
