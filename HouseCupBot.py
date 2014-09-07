@@ -118,7 +118,7 @@ def SubScan():
 						print 'SUCCESS'
 
 #----------The main loop----------#
-print '\n//////////Begin Processing Comments in %s//////////' % SUBREDDIT
+print '\n//////////Begin Processing Comments in /r/%s//////////' % SUBREDDIT
 try:
 	while True:
 		SubScan()
