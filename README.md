@@ -10,4 +10,4 @@ Reddit bot that keeps a running score for Hogwarts houses.
 - Commands available:
     - *"HouseCupBot !winners": Will reply via PM with the past winners of the House Cup.
 
-* = In Development
+    *= In Development
