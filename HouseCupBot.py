@@ -2,7 +2,7 @@ import praw, time, sys, sqlite3, re
 from datetime import datetime
 from getpass import getpass
 
-#----------Bot Configuration----------#
+#----------Bot Configuration-----------#
 BOTNAME		= 'HouseCupBot'
 PASSWORD	=	getpass('Password: ')
 USERAGENT	=	'HouseCupBot keeps a running score for Hogwarts houses. Author: u/D_Web'
