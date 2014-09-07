@@ -2,19 +2,19 @@ import praw, time, sys, sqlite3, re
 from datetime import datetime
 from getpass import getpass
 
-#----------Bot Configuration-----------#
+#----------Bot Configuration----------#
 BOTNAME		= 'HouseCupBot'
-PASSWORD	=	getpass('Password: ')
-USERAGENT	=	'HouseCupBot keeps a running score for Hogwarts houses. Author: u/D_Web'
-SUBREDDIT = 'all'
+PASSWORD	= getpass('Password: ')
+USERAGENT	= 'HouseCupBot keeps a running score for Hogwarts houses. Author: u/D_Web'
+SUBREDDIT 	= 'all'
 
 #----------Replies/Comment Parsing Configuration----------#
-HOUSES		=	['gryffindor','hufflepuff','ravenclaw','slytherin']
-POINTMIN	=	1
-POINTMAX	=	500
-POSTLIMIT = 100
-REGEX			= '\d{1,3}\s(point|points) (for|to) (%s)' % '|'.join(HOUSES)
-RESPONSE	=	'''
+HOUSES		= ['gryffindor','hufflepuff','ravenclaw','slytherin']
+POINTMIN	= 1
+POINTMAX	= 500
+POSTLIMIT 	= 100
+REGEX		= '\d{1,3}\s(point|points) (for|to) (%s)' % '|'.join(HOUSES)
+RESPONSE	= '''
 **%i** points awarded to **%s**!
 
 Current Standings:
@@ -50,17 +50,17 @@ print 'DONE'
 
 #----------This function imposes a rate limit of 1 post per 30 minutes----------#
 def RateCheck(redditor):
-	cur.execute('SELECT date FROM submissions WHERE NAME=?', (redditor,))					# Get the last time the user submitted points for a house
+	cur.execute('SELECT date FROM submissions WHERE NAME=?', (redditor,))						# Get the last time the user submitted points for a house
 	try:	
-		lastPost = datetime.strptime(str(cur.fetchone()[0]), '%Y-%m-%d %H:%M:%S')		# Convert the timestamp to datetime object
-		timeDelta = (datetime.now() - lastPost).seconds															# Find the delta between now and the last post time
-		if timeDelta < 1800:																												# If it has been less than 30 minutes since the last post, ignore the post (return False)
+		lastPost = datetime.strptime(str(cur.fetchone()[0]), '%Y-%m-%d %H:%M:%S')				# Convert the timestamp to datetime object
+		timeDelta = (datetime.now() - lastPost).seconds								# Find the delta between now and the last post time
+		if timeDelta < 1800:											# If it has been less than 30 minutes since the last post, ignore the post (return False)
 			print '%s attempted to post again after %im%is' % (redditor, time_delta/60, time_delta%60)
 			return False
 		else:
-			return True																																# Otherwise we will process it (return True)
+			return True											# Otherwise we will process it (return True)
 	except:
-		return True																																	# If there isn't a last post time in the submissions table, process the post
+		return True												# If there isn't a last post time in the submissions table, process the post
 
 #----------This function replies to a valid post----------#
 def PostReply(post, points, awardedHouse):
@@ -85,11 +85,11 @@ def SubScan():
 			pAuth = '[DELETED]'
 		cur.execute('SELECT * FROM oldposts WHERE ID=?', (pID,))
 		if not cur.fetchone() and pAuth.lower() != BOTNAME.lower():			# If the post has not been processed and the author is not the bot, process the comment.
-			cur.execute('INSERT INTO oldposts VALUES(?)', (pID,))					# Insert the post ID into the table 'oldposts'
+			cur.execute('INSERT INTO oldposts VALUES(?)', (pID,))			# Insert the post ID into the table 'oldposts'
 			sql.commit()
-			pBody = p.body.lower()																				# Store the contents of the post's body in pBody as all lowercase
-			regCheck = re.search(REGEX, pBody)														# Use regex to look for what we need
-			if regCheck and RateCheck(pAuth):															# Check if the post contains what we're looking for and the author hasn't tried posting in the last 30 minutes
+			pBody = p.body.lower()							
+			regCheck = re.search(REGEX, pBody)					# Use regex to look for what we need
+			if regCheck and RateCheck(pAuth):					# Check if the post contains what we're looking for and the author hasn't tried posting in the last 30 minutes
 				newPoints = int(regCheck.group(0).split()[0])
 				house = regCheck.group(3)
 				if newPoints >= POINTMIN and newPoints <= POINTMAX and type(newPoints) is int:
