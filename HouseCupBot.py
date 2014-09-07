@@ -2,6 +2,12 @@ import praw, time, sys, sqlite3, re
 from datetime import datetime
 from getpass import getpass
 
+print '''
+==================== HOUSECUPBOT ====================
+Version: 1.1
+Subreddit: %s
+'''
+
 #----------Bot Configuration----------#
 BOTNAME		= 'HouseCupBot'
 PASSWORD	= getpass('Password: ')
