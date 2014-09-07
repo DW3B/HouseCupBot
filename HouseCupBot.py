@@ -1,75 +1,132 @@
-import praw, time, sqlite3, operator, re
+import praw, time, sys, sqlite3, re
+from datetime import datetime
+from getpass import getpass
 
-#-----Bot Setup-----#
-USERNAME  = 'HouseCupBot'
-PASSWORD  = ''
-USERAGENT = 'HouseCupBot. Keeps a running score for Hogwarts houses. Author: u/d_web'
-HOUSES    = ['gryffindor','hufflepuff','ravenclaw','slytherin']
-TAGLINE   = 'HouseCupBot by u/D_Web. Type "HouseCupBot !help" for more info.'
-REPLIES   = ['%s points awarded to %s\n\n','Winners:\n\n','Need Help?']
-POINTMIN  = 1
-POINTMAX  = 500
+#----------Bot Configuration----------#
+BOTNAME		= 'HouseCupBot'
+PASSWORD	=	getpass('Password: ')
+USERAGENT	=	'HouseCupBot keeps a running score for Hogwarts houses. Author: u/D_Web'
+SUBREDDIT = 'all'
 
-#TODO: Add time restrictions. If user exceeds threshold, assign negative points.
+#----------Replies/Comment Parsing Configuration----------#
+HOUSES		=	['gryffindor','hufflepuff','ravenclaw','slytherin']
+POINTMIN	=	1
+POINTMAX	=	500
+POSTLIMIT = 100
+REGEX			= '\d{1,3}\s(point|points) (for|to) (%s)' % '|'.join(HOUSES)
+RESPONSE	=	'''
+**%i** points awarded to **%s**!
+
+Current Standings:
+
+* Gryffindor: %i
+
+* Hufflepuff: %i
+
+* Ravenclaw:  %i
+
+* Slytherin:  %i
 
 
-#-----SQL Database Setup-----#
-print 'Setting up SQL Database...',
-sql = sqlite3.connect(housecupbot.db)
+Hey, I'm HouseCupBot! For more information about me, check me out on [GitHub](https://github.com/feenahm/HouseCupBot/blob/master/README.md)!
+'''
+
+#----------SQL Database Setup----------#
+print '\nSetting up the SQL Database...',
+sql = sqlite3.connect('housecupbot.db')
 cur = sql.cursor()
 cur.execute('CREATE TABLE IF NOT EXISTS oldposts(ID TEXT)')
-cur.execute('CREATE TABLE IF NOT EXISTS scores(NAME TEXT, POINTS REAL))
-cur.execute('CREATE TABLE IF NOT EXISTS winners(NAME TEXT, TIME_PER TEXT, POINTS REAL))
+cur.execute('CREATE TABLE IF NOT EXISTS submissions(NAME TEXT, HOUSE TEXT, POINTS INTEGER, DATE TIMESTAMP)')
+cur.execute('CREATE TABLE IF NOT EXISTS scores(NAME TEXT, POINTS INTEGER)')
+cur.execute('CREATE TABLE IF NOT EXISTS winners(NAME TEXT, TIME_PER TEXT, POINTS INTEGER)')
 sql.commit()
 print 'DONE'
 
-#-----Reddit Login-----#
+#----------Reddit Login Setup-----------#
 print 'Logging in to Reddit...',
 r = praw.Reddit(USERAGENT)
-r.login(USERNAME, PASSWORD)
+r.login(BOTNAME, PASSWORD)
 print 'DONE'
 
-def sortedDict(dictionary):
-  s_dict = sorted(dictionary.iteritems(), key=operator.itemgetter(1))
-  return s_dict[len(s_dict)-1]
-  
-def subScan():
-  sub = r.get_subreddit('all')
-  posts = sub.get_comments(limit=100)
-  for post in posts:
-    pid = post.id
-    try:
-      p_auth = post.author.name
-    except:
-      p_auth = '[DELETED]'
-    cur.execute('SELECT * FROM oldposts WHERE ID=?', pid)
-    if not cur.fetchone():
-      if p_auth.lower() != username.lower():
-        cur.execute('INSERT INTO oldposts VALUES(?)', pid)
-        p_body = post.body.lower()
-        if re.match('\A\d{1,3}\spoints for \D{9,}$', body):
-          for house in HOUSES:
-              if re.match('\A\d{1,3}\spoints for %s$' % house, body):
-                new_points = int(body.split()[0])
-                if new_points > POINTMIN and new_points < POINTMAX:
-                  cur.execute('SELECT points FROM scores WHERE NAME=?', house)
-                  if not cur.fetchone():
-                    vals = (house, new_points)
-                    cur.execute('INSERT INTO scores VALUE(?,?), vals)
-                  else:
-                    current_points = cur.fetchone()
-                    updated_points = int(current_points) + new_points
-                    vals = (updated_points, house)
-                    cur.execute('UPDATE scores SET points=? WHERE name=?', vals)
-                    post.reply(REPLIES[0] % new_points + TAGLINE)
-                else:
-                  pass
-        elif body == 'housecupbot !help':
-          pass
-        elif body == 'housecupbot !winners':
-          pass
-      else: 
-        pass
-  sql.commit()
-      
-      
+#----------This function imposes a rate limit of 1 post per 30 minutes----------#
+def RateCheck(redditor):
+	cur.execute('SELECT date FROM submissions WHERE NAME=?', (redditor,))					# Get the last time the user submitted points for a house
+	try:	
+		lastPost = datetime.strptime(str(cur.fetchone()[0]), '%Y-%m-%d %H:%M:%S')		# Convert the timestamp to datetime object
+		timeDelta = (datetime.now() - lastPost).seconds															# Find the delta between now and the last post time
+		if timeDelta < 1800:																												# If it has been less than 30 minutes since the last post, ignore the post (return False)
+			print '%s attempted to post again after %im%is' % (redditor, time_delta/60, time_delta%60)
+			return False
+		else:
+			return True																																# Otherwise we will process it (return True)
+	except:
+		return True																																	# If there isn't a last post time in the submissions table, process the post
+
+#----------This function replies to a valid post----------#
+def PostReply(post, points, awardedHouse):
+	pointsList = []
+	for house in HOUSES:
+		try:
+			housePoints = int(cur.execute('SELECT points FROM scores WHERE NAME=?', (house,)).fetchone()[0])
+		except:
+			housePoints = 0
+		pointsList.append(housePoints)
+	post.reply(RESPONSE % (points, awardedHouse.title(), pointsList[0], pointsList[1], pointsList[2], pointsList[3]))
+
+#----------This function does the bulk of the work of processing posts----------#
+def SubScan():
+	sub = r.get_subreddit(SUBREDDIT)
+	posts = sub.get_comments(limit=POSTLIMIT)
+	for p in posts:																	
+		pID = p.id
+		try:
+			pAuth = p.author.name
+		except:
+			pAuth = '[DELETED]'
+		cur.execute('SELECT * FROM oldposts WHERE ID=?', (pID,))
+		if not cur.fetchone() and pAuth.lower() != BOTNAME.lower():			# If the post has not been processed and the author is not the bot, process the comment.
+			cur.execute('INSERT INTO oldposts VALUES(?)', (pID,))					# Insert the post ID into the table 'oldposts'
+			sql.commit()
+			pBody = p.body.lower()																				# Store the contents of the post's body in pBody as all lowercase
+			regCheck = re.search(REGEX, pBody)														# Use regex to look for what we need
+			if regCheck and RateCheck(pAuth):															# Check if the post contains what we're looking for and the author hasn't tried posting in the last 30 minutes
+				newPoints = int(regCheck.group(0).split()[0])
+				house = regCheck.group(3)
+				if newPoints >= POINTMIN and newPoints <= POINTMAX and type(newPoints) is int:
+					try:
+						currentPoints = int(cur.execute('SELECT points FROM scores WHERE NAME=?', (house,)).fetchone()[0])
+						updatedPoints = currentPoints + newPoints
+						cur.execute('UPDATE scores SET points=? WHERE NAME=?', (updatedPoints, house))
+					except:
+						cur.execute('INSERT INTO scores VALUES(?,?)', (house, newPoints))
+					cur.execute('INSERT INTO submissions VALUES(?,?,?,?)', (pAuth, house, newPoints, datetime.now().replace(microsecond=0)))
+					sql.commit()
+					print 'Attempting to reply to %s: "%s"...' % (pAuth, regCheck.group(0)),
+					try: 
+						PostReply(p, newPoints, house)
+						print 'SUCCESS'
+					except praw.errors.RateLimitExceeded as e:
+						print 'ERROR'
+						print 'Sleeping for %d seconds!' % e.sleep_time
+						time.sleep(e.sleep_time + 1)
+						print 'Retrying reply...',
+						PostReply(p, newPoints, house)
+						print 'SUCCESS'
+
+#----------The main loop----------#
+print '\n//////////Begin Processing Comments//////////'
+try:
+	while True:
+		SubScan()
+except KeyboardInterrupt:
+	print '\nGoodbye!'
+	sys.exit()
+
+
+
+
+
+						
+
+
+			
