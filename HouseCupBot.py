@@ -5,8 +5,8 @@ from getpass import getpass
 print '''
 ==================== HOUSECUPBOT ====================
 Version: 1.1
-Subreddit: %s
-''' % SUBREDDIT
+
+'''
 
 #----------Bot Configuration----------#
 BOTNAME		= 'HouseCupBot'
@@ -120,7 +120,7 @@ def SubScan():
 						print 'SUCCESS'
 
 #----------The main loop----------#
-print '\n//////////Begin Processing Comments//////////'
+print '\n//////////Begin Processing Comments in %s//////////' % SUBREDDIT
 try:
 	while True:
 		SubScan()
