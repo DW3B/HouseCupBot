@@ -4,9 +4,7 @@ from getpass import getpass
 
 print '''
 ==================== HOUSECUPBOT ====================
-Version: 1.1
-
-'''
+Version: 1.1'''
 
 #----------Bot Configuration----------#
 BOTNAME		= 'HouseCupBot'
