@@ -4,19 +4,19 @@ from getpass import getpass
 
 print '''
 ==================== HOUSECUPBOT ====================
-Version: 1.1'''
+Version: 1.2'''
 
 #----------Bot Configuration----------#
 BOTNAME		= 'HouseCupBot'
 PASSWORD	= getpass('Password: ')
 USERAGENT	= 'HouseCupBot keeps a running score for Hogwarts houses. Author: u/D_Web'
-SUBREDDIT 	= 'requestabot+funny+all'
+SUBREDDIT 	= 'all'
 
 #----------Replies/Comment Parsing Configuration----------#
 HOUSES		= ['gryffindor','hufflepuff','ravenclaw','slytherin']
 POINTMIN	= 1
 POINTMAX	= 500
-POSTLIMIT 	= 100
+POSTLIMIT 	= None
 REGEX		= '\d{1,3}\s(point|points) (for|to) (%s)' % '|'.join(HOUSES)
 RESPONSE	= '''
 **%i** points awarded to **%s**!
@@ -122,6 +122,13 @@ print '\n////////// Begin Processing Comments in "/r/%s" //////////' % SUBREDDIT
 try:
 	while True:
 		SubScan()
+except requests.exceptions.HTTPError as e:
+	if e.code in [429, 500, 502, 503, 504]:
+		print 'Received timeout error %s, sleeping...' % e.code
+		time.sleep(60)
+		pass
+	else:
+		raise
 except KeyboardInterrupt:
 	print '\nGoodbye!'
 	sys.exit()
