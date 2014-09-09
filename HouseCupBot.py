@@ -10,7 +10,7 @@ Version: 1.1'''
 BOTNAME		= 'HouseCupBot'
 PASSWORD	= getpass('Password: ')
 USERAGENT	= 'HouseCupBot keeps a running score for Hogwarts houses. Author: u/D_Web'
-SUBREDDIT 	= 'requestabot+all'
+SUBREDDIT 	= 'requestabot+funny+all'
 
 #----------Replies/Comment Parsing Configuration----------#
 HOUSES		= ['gryffindor','hufflepuff','ravenclaw','slytherin']
