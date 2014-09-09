@@ -16,7 +16,7 @@ SUBREDDIT 	= 'requestabot+all'
 HOUSES		= ['gryffindor','hufflepuff','ravenclaw','slytherin']
 POINTMIN	= 1
 POINTMAX	= 500
-POSTLIMIT 	= 100
+POSTLIMIT 	= 'None'
 REGEX		= '\d{1,3}\s(point|points) (for|to) (%s)' % '|'.join(HOUSES)
 RESPONSE	= '''
 **%i** points awarded to **%s**!
