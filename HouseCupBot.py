@@ -122,7 +122,7 @@ print '\n////////// Begin Processing Comments in "/r/%s" //////////' % SUBREDDIT
 try:
 	while True:
 		SubScan()
-except requests.exceptions.HTTPError as e:
+except urllib2.HTTPError as e:
 	if e.code in [429, 500, 502, 503, 504]:
 		print 'Received timeout error %s, sleeping...' % e.code
 		time.sleep(60)
