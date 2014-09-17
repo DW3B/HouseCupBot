@@ -11,3 +11,7 @@ Reddit bot that keeps a running score for Hogwarts houses.
     - *"HouseCupBot !winners": Will reply via PM with the past winners of the House Cup.
 
     *= In Development
+
+BANNED FROM:
+
+/r/AskReddit
